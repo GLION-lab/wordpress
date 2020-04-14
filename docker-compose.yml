@@ -15,6 +15,19 @@ services:
     volumes:
       - ./html:/var/www/html
 
+  wordpress_2:
+    image: wordpress
+    restart: always
+    ports:
+      - 8081:80
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: exampleuser
+      WORDPRESS_DB_PASSWORD: examplepass
+      WORDPRESS_DB_NAME: exampledb_2
+    volumes:
+      - ./html_2:/var/www/html_2
+
 
   db:
     image: mysql:5.7
@@ -23,8 +36,14 @@ services:
       MYSQL_DATABASE: exampledb
       MYSQL_USER: exampleuser
       MYSQL_PASSWORD: examplepass
-      MYSQL_RANDOM_ROOT_PASSWORD: '1'
-    volumes:
-      - db_data:/var/lib/mysql
-volumes:
-  db_data:
+      MYSQL_ROOT_USER: root
+      MYSQL_ROOT_PASSWORD: password
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    links: 
+      - db
+    ports:
+      - 3000:80
+    volumes: 
+      - ./sessions
