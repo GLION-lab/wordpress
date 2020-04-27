@@ -5,6 +5,30 @@
  * @package wp-headless
  */
 
+// taxonomyを追加
+function add_taxonomy() {
+  // ピックアップを追加
+  register_taxonomy(
+    'pickup', //タクソノミースラッグ
+    'post', //利用する投稿タイプ（通常の投稿の場合は「post」、固定ページの場合は「page」）
+    array(
+      'label' => 'ピックアップ',
+      'singular_label' => 'pickup',
+      'labels' => array(
+        'all_items' => 'ピックアップ一覧',
+        'add_new_item' => 'ピックアップを追加'
+      ),
+      'public' => true,
+      'show_in_rest' => true,
+      'show_ui' => true,
+      'show_in_nav_menus' => true,
+      'rest_base' => 'pickups',
+      'hierarchical' => true //階層を持たせる場合は「true」、持たせない場合は「false」
+    )
+   );
+}
+add_action( 'init', 'add_taxonomy' );
+
 // CORS対策
 function cors_http_header(){
     header("Access-Control-Allow-Origin: *");
