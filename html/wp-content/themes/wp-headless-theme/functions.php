@@ -25,7 +25,7 @@ function add_taxonomy() {
       'rest_base' => 'pickups',
       'hierarchical' => true //階層を持たせる場合は「true」、持たせない場合は「false」
     )
-   );
+  );
 }
 add_action( 'init', 'add_taxonomy' );
 
@@ -46,6 +46,36 @@ function custom_preview_page_link($link) {
   return $link;
 }
 add_filter('preview_post_link', 'custom_preview_page_link');
+
+// workaround script until there's an official solution for https://github.com/WordPress/gutenberg/issues/13998
+function fix_preview_link_on_draft() {
+  global $post;
+  $id = $post->ID;
+  $nonce = wp_create_nonce('wp_rest');
+  $link = 'http://localhost:8000/preview/?id='. $id. '&_wpnonce='. $nonce;
+  echo '<script type="text/javascript">
+    jQuery(document).ready(function () {
+      const checkPreviewInterval = setInterval(checkPreview, 1000);
+      function checkPreview() {
+        const editorPreviewButton = jQuery(".editor-post-preview");
+        if (editorPreviewButton.length && editorPreviewButton.attr("href") !== "' . $link . '" ) {
+          editorPreviewButton.attr("href", "' . $link . '");
+          editorPreviewButton.off();
+          editorPreviewButton.click(false);
+          editorPreviewButton.on("click", function() {
+            setTimeout(function() { 
+              const win = window.open("' . $link . '", "_blank");
+              if (win) {
+                win.focus();
+              }
+            }, 1000);
+          });
+        }
+      }
+    });
+  </script>';
+}
+add_action('admin_footer', 'fix_preview_link_on_draft');
 
 // add_filter( 'rest_prepare_revision', function( $response, $post ) {
 //   $data = $response->get_data();

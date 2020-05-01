@@ -323,3 +323,75 @@ require get_template_directory() . '/inc/template-tags.php';
  * Customizer additions.
  */
 require get_template_directory() . '/inc/customizer.php';
+
+// taxonomyを追加
+function add_taxonomy() {
+  // ピックアップを追加
+  register_taxonomy(
+    'pickup', //タクソノミースラッグ
+    'post', //利用する投稿タイプ（通常の投稿の場合は「post」、固定ページの場合は「page」）
+    array(
+      'label' => 'ピックアップ',
+      'singular_label' => 'pickup',
+      'labels' => array(
+        'all_items' => 'ピックアップ一覧',
+        'add_new_item' => 'ピックアップを追加'
+      ),
+      'public' => true,
+      'show_in_rest' => true,
+      'show_ui' => true,
+      'show_in_nav_menus' => true,
+      'rest_base' => 'pickups',
+      'hierarchical' => true //階層を持たせる場合は「true」、持たせない場合は「false」
+    )
+  );
+}
+add_action( 'init', 'add_taxonomy' );
+
+// CORS対策
+function cors_http_header(){
+    header("Access-Control-Allow-Origin: *");
+}
+add_action('send_headers', 'cors_http_header');
+
+// nonce生成
+function custom_preview_page_link($link) {
+  global $post;
+  $id = $post->ID;
+  // $prefix = $post->post_type;
+  // $id = get_the_ID();
+  $nonce = wp_create_nonce('wp_rest');
+  $link = 'http://localhost:8000/preview/?id='. $id. '&_wpnonce='. $nonce;
+  return $link;
+}
+add_filter('preview_post_link', 'custom_preview_page_link');
+
+// workaround script until there's an official solution for https://github.com/WordPress/gutenberg/issues/13998
+function fix_preview_link_on_draft() {
+  global $post;
+  $id = $post->ID;
+  $nonce = wp_create_nonce('wp_rest');
+  $link = 'http://localhost:8000/preview/?id='. $id. '&_wpnonce='. $nonce;
+  echo '<script type="text/javascript">
+    jQuery(document).ready(function () {
+      const checkPreviewInterval = setInterval(checkPreview, 1000);
+      function checkPreview() {
+        const editorPreviewButton = jQuery(".editor-post-preview");
+        if (editorPreviewButton.length && editorPreviewButton.attr("href") !== "' . $link . '" ) {
+          editorPreviewButton.attr("href", "' . $link . '");
+          editorPreviewButton.off();
+          editorPreviewButton.click(false);
+          editorPreviewButton.on("click", function() {
+            setTimeout(function() { 
+              const win = window.open("' . $link . '", "_blank");
+              if (win) {
+                win.focus();
+              }
+            }, 1000);
+          });
+        }
+      }
+    });
+  </script>';
+}
+add_action('admin_footer', 'fix_preview_link_on_draft');
