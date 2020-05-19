@@ -3,10 +3,10 @@
 ## 起動方法
 
 ```
-docker up
-
-# pluginの追加
+# pluginの取得
 git submodule update --init --recursive
+
+docker up
 ```
 
  graphql plugin 入りの wordpress が立ち上がる（はず）
