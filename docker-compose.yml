@@ -15,7 +15,6 @@ services:
     volumes:
       - ./html:/var/www/html
 
-
   db:
     image: mysql:5.7
     restart: always
@@ -26,5 +25,17 @@ services:
       MYSQL_RANDOM_ROOT_PASSWORD: '1'
     volumes:
       - db_data:/var/lib/mysql
+#      - ./mysql-dump:/docker-entrypoint-initdb.d
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:4.6.2-3
+    links:
+      - db:db
+    ports:
+      - "8888:80"
+    environment:
+      PMA_USER: exampleuser
+      PMA_PASSWORD: examplepass
+
 volumes:
   db_data:

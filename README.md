@@ -3,6 +3,9 @@
 ## 起動方法
 
 ```
+# pluginの取得
+git submodule update --init --recursive
+
 docker up
 ```
 
